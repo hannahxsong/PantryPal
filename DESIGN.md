@@ -35,7 +35,7 @@ For passwords, I hash them using Werkzeug's `generate_password_hash` before stor
 
 ## API Integration
 
-The app makes HTTP requests to the Spoonacular API using Python's `requests` library. I learned about API integration from CS50's finance problem set and applied similar patterns here.
+The app makes HTTP requests to the Spoonacular API using Python's `requests` library.
 
 The main endpoints I use are:
 - `findByIngredients`: For OR searches and fallback recommendations
