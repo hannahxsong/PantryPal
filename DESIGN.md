@@ -138,7 +138,7 @@ I created several AJAX endpoints for dynamic functionality without page reloads:
 - `/favorite/add/<id>`: Add recipe to favorites
 - `/favorite/remove/<id>`: Remove recipe from favorites
 
-These return JSON responses that JavaScript processes to update the UI. I learned about AJAX from CS50's finance problem set and applied it here.
+These return JSON responses that JavaScript processes to update the UI.
 
 ## Error Handling
 
