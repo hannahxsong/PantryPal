@@ -11,6 +11,12 @@ Pantry Pal is a full-stack web application designed to eliminate food waste by g
 
 ## Tech Stack
 
+| Layer	| Technology |
+| :--- | :--- |
+| **Backend** | Python, Flask |
+| **Database** | SQLAlchemy (ORM), SQLite |
+| **Frontend** | Jinja2, JavaScript, CSS |
+| **API** | Spoonacular Food API |
 
 ## Setup & Installation
 
