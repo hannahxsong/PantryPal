@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Find Recipes · Pantry Pal{% endblock %}
+
+{% block content %}
+  <!-- search form for ingredients -->
+  <div class="card">
+    <h2>What ingredients do you have?</h2>
+    <form method="post" class="ingredients-form">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.ingredients.label }}
+        {{ form.ingredients(class="textarea") }}
+        <small class="help-text">Separate ingredients with commas (e.g. eggs, milk, spinach). Prefix any ingredient with # to exclude it from the search.</small>
+        {% if form.ingredients.errors %}
+          <div class="form-error">
+            {{ form.ingredients.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- filter options -->
+      <div class="filter-group">
+        <div class="form-group">
+          {{ form.max_time.label }}
+          {{ form.max_time(class="select") }}
+        </div>
+        <div class="form-group">
+          {{ form.cuisine.label }}
+          {{ form.cuisine(class="select") }}
+        </div>
+        <!-- dish type not in wtform, so using regular html select -->
+        <div class="form-group">
+          <label for="dish_type">Dish Type</label>
+          <select name="dish_type" id="dish_type" class="select">
+            <option value="">Any</option>
+            <option value="main course" {% if search_params and search_params.get('dish_type') == 'main course' %}selected{% endif %}>Main Course</option>
+            <option value="side dish" {% if search_params and search_params.get('dish_type') == 'side dish' %}selected{% endif %}>Side Dish</option>
+            <option value="dessert" {% if search_params and search_params.get('dish_type') == 'dessert' %}selected{% endif %}>Dessert</option>
+            <option value="appetizer" {% if search_params and search_params.get('dish_type') == 'appetizer' %}selected{% endif %}>Appetizer</option>
+            <option value="salad" {% if search_params and search_params.get('dish_type') == 'salad' %}selected{% endif %}>Salad</option>
+            <option value="bread" {% if search_params and search_params.get('dish_type') == 'bread' %}selected{% endif %}>Bread</option>
+            <option value="breakfast" {% if search_params and search_params.get('dish_type') == 'breakfast' %}selected{% endif %}>Breakfast</option>
+            <option value="soup" {% if search_params and search_params.get('dish_type') == 'soup' %}selected{% endif %}>Soup</option>
+            <option value="beverage" {% if search_params and search_params.get('dish_type') == 'beverage' %}selected{% endif %}>Beverage</option>
+            <option value="sauce" {% if search_params and search_params.get('dish_type') == 'sauce' %}selected{% endif %}>Sauce</option>
+            <option value="snack" {% if search_params and search_params.get('dish_type') == 'snack' %}selected{% endif %}>Snack</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- search type and additional options -->
+      <div class="search-options">
+        <div class="form-group">
+          <label>Search Type</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="search_type" value="AND" {% if not search_params or search_params.get('search_type', 'AND') == 'AND' %}checked{% endif %}>
+              <span>AND (recipes with all ingredients)</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="search_type" value="OR" {% if search_params and search_params.get('search_type') == 'OR' %}checked{% endif %}>
+              <span>OR (recipes with any ingredient)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="low_ingredient" id="low_ingredient" {% if search_params and search_params.get('low_ingredient') %}checked{% endif %}>
+            <span>Low-ingredient recipes (5 or fewer ingredients)</span>
+          </label>
+        </div>
+      </div>
+      
+      {{ form.submit(class="btn-primary") }}
+    </form>
+  </div>
+
+  <!-- error or info messages -->
+  {% if error %}
+    <div class="card {% if 'share at least one ingredient' in error %}info-card{% else %}error-card{% endif %}">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- recipe results grid -->
+  {% if recipes %}
+    <section class="results-grid" id="recipes-container">
+      {% for recipe in recipes %}
+        <article class="recipe-card">
+          <img src="{{ recipe.image }}" alt="{{ recipe.title }}" class="recipe-image" />
+          <div class="recipe-body">
+            <h3>{{ recipe.title }}</h3>
+            {% if recipe.readyInMinutes %}
+              <p class="recipe-meta">Ready in {{ recipe.readyInMinutes }} minutes</p>
+            {% endif %}
+            {% if recipe.cuisines %}
+              <p class="recipe-meta">Cuisine: {{ recipe.cuisines | join(', ') }}</p>
+            {% endif %}
+            <!-- ingredient match info (only shown for findByIngredients results) -->
+            {% if recipe.usedIngredientCount is defined %}
+              <p class="recipe-meta">
+                Uses {{ recipe.usedIngredientCount }} of your ingredients,
+                missing {{ recipe.missedIngredientCount }}.
+              </p>
+            {% endif %}
+            {% if recipe.usedIngredients %}
+              <p class="recipe-list">
+                <strong>Used:</strong>
+                {{ recipe.usedIngredients | map(attribute='name') | join(', ') }}
+              </p>
+            {% endif %}
+            {% if recipe.missedIngredients %}
+              <p class="recipe-list">
+                <strong>Missing:</strong>
+                {{ recipe.missedIngredients | map(attribute='name') | join(', ') }}
+              </p>
+            {% endif %}
+            <div class="recipe-actions">
+              <a
+                href="{{ url_for('recipe_detail', recipe_id=recipe.id) }}"
+                class="btn-secondary small-btn"
+              >
+                View full recipe
+              </a>
+              <!-- favorite button with data attributes for javascript -->
+              <button 
+                class="favorite-btn {% if recipe.id in favorite_ids %}favorited{% endif %}" 
+                data-recipe-id="{{ recipe.id }}"
+                data-recipe-title="{{ recipe.title }}"
+                data-recipe-image="{{ recipe.image }}"
+              >
+                {% if recipe.id in favorite_ids %}
+                  ❤️ Favorited
+                {% else %}
+                  🤍 Add to Favorites
+                {% endif %}
+              </button>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+    <!-- recipe count display -->
+    {% if recipes and total_recipes > 0 %}
+      <div class="recipe-count-display" id="recipe-count-display">
+        Found <span id="total-recipes">{{ total_recipes }}</span> recipe{{ 's' if total_recipes != 1 else '' }}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <script>
+    // restore scroll position if returning from recipe detail page
+    // store scroll position when clicking on a recipe
+    document.querySelectorAll('a[href*="/recipe/"]').forEach(link => {
+      link.addEventListener('click', function() {
+        sessionStorage.setItem('recipeScrollPosition', window.scrollY.toString());
+      });
+    });
+    
+    // restore scroll position when page loads (if we have stored position)
+    window.addEventListener('load', function() {
+      const savedPosition = sessionStorage.getItem('recipeScrollPosition');
+      if (savedPosition !== null) {
+        // use setTimeout to ensure page is fully rendered
+        setTimeout(function() {
+          window.scrollTo(0, parseInt(savedPosition));
+          // clear the stored position after restoring
+          sessionStorage.removeItem('recipeScrollPosition');
+        }, 100);
+      }
+    });
+    
+    // Handle favorite button clicks
+    function handleFavoriteClick() {
+      const recipeId = parseInt(this.dataset.recipeId);
+      const isFavorited = this.classList.contains('favorited');
+      const url = isFavorited 
+        ? `/favorite/remove/${recipeId}` 
+        : `/favorite/add/${recipeId}`;
+      
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (isFavorited) {
+            this.classList.remove('favorited');
+            this.innerHTML = '🤍 Add to Favorites';
+          } else {
+            this.classList.add('favorited');
+            this.innerHTML = '❤️ Favorited';
+          }
+        } else {
+          alert(data.message || 'Something went wrong');
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error.message);
+      });
+    }
+    
+    // Add event listeners to existing favorite buttons
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+      btn.addEventListener('click', handleFavoriteClick);
+    });
+  </script>
+{% endblock %}

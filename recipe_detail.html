@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.title }} · Pantry Pal{% endblock %}
+
+{% block content %}
+  <div class="recipe-detail-container">
+    <!-- navigation back to search results -->
+    <a href="{{ url_for('ingredients') }}" class="back-link">← Back to recipes</a>
+    
+    <!-- recipe header with large image and title -->
+    <div class="recipe-header-card">
+      <div class="recipe-image-wrapper">
+        <img src="{{ recipe.image }}" alt="{{ recipe.title }}" class="recipe-main-image" />
+      </div>
+      <div class="recipe-header-content">
+        <h1>{{ recipe.title }}</h1>
+        <div class="recipe-header-actions">
+          <!-- favorite button - uses ajax to add/remove without page reload -->
+          <button 
+            class="favorite-btn-detail {% if is_favorited %}favorited{% endif %}" 
+            data-recipe-id="{{ recipe.id }}"
+            data-recipe-title="{{ recipe.title }}"
+            data-recipe-image="{{ recipe.image }}"
+          >
+            {% if is_favorited %}
+              ❤️ Favorited
+            {% else %}
+              🤍 Add to Favorites
+            {% endif %}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview Section -->
+    <div class="section-card">
+      <h2 class="section-title">Overview</h2>
+      <div class="overview-content">
+        {% if recipe.summary %}
+          <div class="overview-description">
+            {{ recipe.summary | safe }}
+          </div>
+        {% endif %}
+        <div class="overview-meta">
+          {% if recipe.cuisines %}
+            <div class="overview-item">
+              <span class="overview-label">Cuisine</span>
+              <span class="overview-value">{{ recipe.cuisines | join(', ') }}</span>
+            </div>
+          {% endif %}
+          {% if recipe.sourceName %}
+            <div class="overview-item">
+              <span class="overview-label">Source</span>
+              <span class="overview-value">
+                {% if recipe.sourceUrl %}
+                  <a href="{{ recipe.sourceUrl }}" target="_blank" rel="noopener">{{ recipe.sourceName }}</a>
+                {% else %}
+                  {{ recipe.sourceName }}
+                {% endif %}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Stats Section -->
+    <div class="section-card">
+      <h2 class="section-title">Key Stats</h2>
+      <div class="stats-grid">
+        {% if recipe.readyInMinutes %}
+          <div class="stat-item">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-content">
+              <div class="stat-label">Total Time</div>
+              <div class="stat-value">{{ recipe.readyInMinutes }} min</div>
+            </div>
+          </div>
+          {% if recipe.preparationMinutes %}
+            <div class="stat-item">
+              <div class="stat-icon">🔪</div>
+              <div class="stat-content">
+                <div class="stat-label">Prep Time</div>
+                <div class="stat-value">{{ recipe.preparationMinutes }} min</div>
+              </div>
+            </div>
+          {% endif %}
+          {% if recipe.cookingMinutes %}
+            <div class="stat-item">
+              <div class="stat-icon">🍳</div>
+              <div class="stat-content">
+                <div class="stat-label">Cook Time</div>
+                <div class="stat-value">{{ recipe.cookingMinutes }} min</div>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+        {% if recipe.nutrition and recipe.nutrition.nutrients %}
+          {% for nutrient in recipe.nutrition.nutrients %}
+            {% if nutrient.name == 'Calories' %}
+              <div class="stat-item">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-content">
+                  <div class="stat-label">Calories</div>
+                  <div class="stat-value" id="calories-value">{{ "%.0f"|format(nutrient.amount) }} {{ nutrient.unit }}</div>
+                </div>
+              </div>
+            {% elif nutrient.name == 'Protein' %}
+              <div class="stat-item">
+                <div class="stat-icon">💪</div>
+                <div class="stat-content">
+                  <div class="stat-label">Protein</div>
+                  <div class="stat-value" id="protein-value">{{ "%.1f"|format(nutrient.amount) }} {{ nutrient.unit }}</div>
+                </div>
+              </div>
+            {% elif nutrient.name == 'Fat' %}
+              <div class="stat-item">
+                <div class="stat-icon">🥑</div>
+                <div class="stat-content">
+                  <div class="stat-label">Fat</div>
+                  <div class="stat-value" id="fat-value">{{ "%.1f"|format(nutrient.amount) }} {{ nutrient.unit }}</div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        <div class="stat-item">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <div class="stat-label">Servings</div>
+            <div class="stat-value servings-control">
+              <button class="serving-btn" id="serving-decrease">−</button>
+              <span id="serving-count">{{ recipe.servings }}</span>
+              <button class="serving-btn" id="serving-increase">+</button>
+            </div>
+          </div>
+        </div>
+        {% if recipe.pricePerServing %}
+          <div class="stat-item">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+              <div class="stat-label">Cost per Serving</div>
+              <div class="stat-value" id="cost-value">${{ "%.2f"|format(recipe.pricePerServing / 100) }}</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Dietary Tags Section -->
+    {% if recipe.diets or recipe.veryHealthy or recipe.veryPopular or recipe.cheap or recipe.dairyFree or recipe.glutenFree or recipe.ketogenic or recipe.vegan or recipe.vegetarian %}
+      <div class="section-card">
+        <h2 class="section-title">Dietary Tags</h2>
+        <div class="tags-container">
+          {% if recipe.diets %}
+            {% for diet in recipe.diets %}
+              <span class="diet-tag">{{ diet | replace('_', ' ') | title }}</span>
+            {% endfor %}
+          {% endif %}
+          {% if recipe.glutenFree %}
+            <span class="diet-tag">Gluten Free</span>
+          {% endif %}
+          {% if recipe.dairyFree %}
+            <span class="diet-tag">Dairy Free</span>
+          {% endif %}
+          {% if recipe.vegetarian %}
+            <span class="diet-tag">Vegetarian</span>
+          {% endif %}
+          {% if recipe.vegan %}
+            <span class="diet-tag">Vegan</span>
+          {% endif %}
+          {% if recipe.ketogenic %}
+            <span class="diet-tag">Keto</span>
+          {% endif %}
+          {% if recipe.veryHealthy %}
+            <span class="diet-tag">Very Healthy</span>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Popularity Section -->
+    <div class="section-card">
+      <h2 class="section-title">Popularity</h2>
+      <div class="popularity-grid">
+        {% if recipe.aggregateLikes %}
+          <div class="popularity-item">
+            <div class="popularity-label">People Who Tried It</div>
+            <div class="popularity-value">{{ recipe.aggregateLikes | int }}</div>
+          </div>
+        {% endif %}
+        {% if recipe.spoonacularScore %}
+          <div class="popularity-item">
+            <div class="popularity-label">Spoonacular Score</div>
+            <div class="popularity-value">{{ "%.0f"|format(recipe.spoonacularScore) }}/100</div>
+          </div>
+        {% endif %}
+        {% if recipe.healthScore %}
+          <div class="popularity-item">
+            <div class="popularity-label">Health Score</div>
+            <div class="popularity-value">{{ "%.0f"|format(recipe.healthScore) }}/100</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ingredients section with serving size and measurement unit controls -->
+    {% if recipe.extendedIngredients %}
+      <div class="section-card">
+        <div class="section-header-with-controls">
+          <h2 class="section-title">Ingredients</h2>
+          <!-- toggle between US and metric measurements -->
+          <div class="measurement-toggle">
+            <button class="measurement-btn active" data-unit="us" id="unit-us">US</button>
+            <button class="measurement-btn" data-unit="metric" id="unit-metric">Metric</button>
+          </div>
+        </div>
+        <!-- ingredient list with data attributes for javascript to update amounts -->
+        <ul class="ingredients-list" id="ingredients-list">
+          {% for ingredient in recipe.extendedIngredients %}
+            <li class="ingredient-item" data-original-amount="{{ ingredient.amount }}" data-original-unit-us="{{ ingredient.unit }}" data-original-unit-metric="{{ ingredient.measures.metric.unit if ingredient.measures and ingredient.measures.metric else ingredient.unit }}" data-original-amount-metric="{{ ingredient.measures.metric.amount if ingredient.measures and ingredient.measures.metric else ingredient.amount }}">
+              <span class="ingredient-amount" data-us-amount="{{ ingredient.amount }}" data-metric-amount="{{ ingredient.measures.metric.amount if ingredient.measures and ingredient.measures.metric else ingredient.amount }}">
+                {% if ingredient.amount %}
+                  <!-- format to remove unnecessary decimals -->
+                  {% if ingredient.amount % 1 == 0 %}
+                    {{ ingredient.amount | int }}
+                  {% else %}
+                    {{ "%.2f"|format(ingredient.amount) | replace('.00', '') | replace('.0', '') }}
+                  {% endif %}
+                {% endif %}
+                {% if ingredient.unit %} <span class="ingredient-unit">{{ ingredient.unit }}</span>{% endif %}
+              </span>
+              <span class="ingredient-name">{{ ingredient.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Instructions Section -->
+    {% if recipe.analyzedInstructions and recipe.analyzedInstructions|length > 0 %}
+      <div class="section-card">
+        <h2 class="section-title">Instructions</h2>
+        <ol class="instructions-list">
+          {% for instruction in recipe.analyzedInstructions[0].steps %}
+            <li class="instruction-step">
+              <div class="step-number">{{ instruction.number }}</div>
+              <div class="step-content">
+                <p>{{ instruction.step }}</p>
+                {% if instruction.equipment %}
+                  <div class="step-equipment">
+                    <strong>Equipment:</strong>
+                    {% for eq in instruction.equipment %}
+                      {{ eq.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      </div>
+    {% elif recipe.instructions %}
+      <div class="section-card">
+        <h2 class="section-title">Instructions</h2>
+        <div class="instructions-text">{{ recipe.instructions | safe }}</div>
+      </div>
+    {% endif %}
+
+    <!-- Nutrition Breakdown Section -->
+    {% if recipe.nutrition and recipe.nutrition.nutrients %}
+      <div class="section-card">
+        <div class="section-header-with-controls">
+          <h2 class="section-title">Nutrition Breakdown</h2>
+          <button class="nutrition-toggle-btn" id="nutrition-toggle">Show All</button>
+        </div>
+        {% set common_nutrients = ['Carbohydrates', 'Fiber', 'Sugar', 'Sodium', 'Calcium', 'Iron', 'Vitamin C', 'Vitamin A', 'Cholesterol', 'Saturated Fat'] %}
+        <div class="nutrition-grid" id="nutrition-common">
+          {% for nutrient in recipe.nutrition.nutrients %}
+            {% if nutrient.name not in ['Calories', 'Protein', 'Fat'] and nutrient.name in common_nutrients %}
+              <div class="nutrition-item" data-original-amount="{{ nutrient.amount }}">
+                <span class="nutrition-name">{{ nutrient.name }}</span>
+                <span class="nutrition-value">
+                  {{ "%.1f"|format(nutrient.amount) }} {{ nutrient.unit }}
+                </span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="nutrition-grid" id="nutrition-all" style="display: none;">
+          {% for nutrient in recipe.nutrition.nutrients %}
+            {% if nutrient.name not in ['Calories', 'Protein', 'Fat'] %}
+              <div class="nutrition-item" data-original-amount="{{ nutrient.amount }}">
+                <span class="nutrition-name">{{ nutrient.name }}</span>
+                <span class="nutrition-value">
+                  {{ "%.1f"|format(nutrient.amount) }} {{ nutrient.unit }}
+                </span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Similar Recipes Section -->
+    {% if similar_recipes %}
+      <div class="section-card">
+        <h2 class="section-title">Similar Recipes</h2>
+        <div class="similar-recipes-scroll">
+          {% for similar in similar_recipes %}
+            <a href="{{ url_for('recipe_detail', recipe_id=similar.id) }}" class="similar-recipe-card">
+              {% if similar.image %}
+                <img src="{{ similar.image }}" alt="{{ similar.title }}" class="similar-recipe-image" onerror="this.onerror=null; this.src='https://spoonacular.com/recipeImages/{{ similar.id }}-312x231.jpg';" />
+              {% else %}
+                <img src="https://spoonacular.com/recipeImages/{{ similar.id }}-312x231.jpg" alt="{{ similar.title }}" class="similar-recipe-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'312\' height=\'231\'%3E%3Crect fill=\'%23f5f5f5\' width=\'312\' height=\'231\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\' font-family=\'sans-serif\' font-size=\'14\'%3ENo Image%3C/text%3E%3C/svg%3E';" />
+              {% endif %}
+              <div class="similar-recipe-content">
+                <div class="similar-recipe-title">{{ similar.title }}</div>
+                {% if similar.common_ingredients %}
+                  <div class="similar-recipe-common">
+                    <span class="common-label">Shares:</span>
+                    <span class="common-ingredients">{{ similar.common_ingredients | join(', ') }}</span>
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // Store original recipe data
+    const originalServings = {{ recipe.servings }};
+    let currentServings = originalServings;
+    let currentUnit = 'us';
+    
+    // Get nutrition values safely
+    const nutritionData = {{ recipe.nutrition.nutrients | tojson if recipe.nutrition and recipe.nutrition.nutrients else '[]' }};
+    const getNutrient = (name) => {
+      const nutrient = nutritionData.find(n => n.name === name);
+      return nutrient ? nutrient.amount : 0;
+    };
+    
+    const originalNutrition = {
+      calories: getNutrient('Calories'),
+      protein: getNutrient('Protein'),
+      fat: getNutrient('Fat')
+    };
+    const originalPrice = {{ recipe.pricePerServing | default(0) }};
+
+    // Serving size controls
+    document.getElementById('serving-increase')?.addEventListener('click', () => {
+      currentServings = Math.min(currentServings + 1, 20);
+      updateServings();
+    });
+
+    document.getElementById('serving-decrease')?.addEventListener('click', () => {
+      currentServings = Math.max(currentServings - 1, 1);
+      updateServings();
+    });
+
+    // Measurement unit toggle
+    document.getElementById('unit-us')?.addEventListener('click', () => {
+      currentUnit = 'us';
+      document.getElementById('unit-us').classList.add('active');
+      document.getElementById('unit-metric').classList.remove('active');
+      updateIngredients();
+    });
+
+    document.getElementById('unit-metric')?.addEventListener('click', () => {
+      currentUnit = 'metric';
+      document.getElementById('unit-metric').classList.add('active');
+      document.getElementById('unit-us').classList.remove('active');
+      updateIngredients();
+    });
+
+    function updateServings() {
+      const ratio = currentServings / originalServings;
+      document.getElementById('serving-count').textContent = currentServings;
+      
+      // Update nutrition values
+      const caloriesEl = document.getElementById('calories-value');
+      if (caloriesEl && originalNutrition.calories) {
+        caloriesEl.textContent = Math.round(originalNutrition.calories * ratio) + ' kcal';
+      }
+      const proteinEl = document.getElementById('protein-value');
+      if (proteinEl && originalNutrition.protein) {
+        proteinEl.textContent = (originalNutrition.protein * ratio).toFixed(1) + ' g';
+      }
+      const fatEl = document.getElementById('fat-value');
+      if (fatEl && originalNutrition.fat) {
+        fatEl.textContent = (originalNutrition.fat * ratio).toFixed(1) + ' g';
+      }
+      const costEl = document.getElementById('cost-value');
+      if (costEl && originalPrice) {
+        costEl.textContent = '$' + ((originalPrice * ratio) / 100).toFixed(2);
+      }
+      
+      // Update ingredients
+      updateIngredients();
+      
+      // Update nutrition grid
+      document.querySelectorAll('.nutrition-item').forEach(item => {
+        const originalAmount = parseFloat(item.dataset.originalAmount);
+        if (!isNaN(originalAmount)) {
+          const newAmount = originalAmount * ratio;
+          const unit = item.querySelector('.nutrition-value').textContent.split(' ').slice(-1)[0];
+          item.querySelector('.nutrition-value').textContent = newAmount.toFixed(1) + ' ' + unit;
+        }
+      });
+    }
+
+    // Nutrition toggle
+    document.getElementById('nutrition-toggle')?.addEventListener('click', function() {
+      const commonGrid = document.getElementById('nutrition-common');
+      const allGrid = document.getElementById('nutrition-all');
+      const isShowingAll = allGrid.style.display !== 'none';
+      
+      if (isShowingAll) {
+        commonGrid.style.display = 'grid';
+        allGrid.style.display = 'none';
+        this.textContent = 'Show All';
+      } else {
+        commonGrid.style.display = 'none';
+        allGrid.style.display = 'grid';
+        this.textContent = 'Show Common Only';
+      }
+    });
+
+    function updateIngredients() {
+      const ratio = currentServings / originalServings;
+      document.querySelectorAll('.ingredient-item').forEach(item => {
+        const originalAmount = parseFloat(item.dataset.originalAmount) || 0;
+        const usAmount = parseFloat(item.dataset.usAmount || originalAmount) * ratio;
+        const metricAmountData = item.dataset.originalAmountMetric;
+        const metricAmount = metricAmountData ? parseFloat(metricAmountData) * ratio : usAmount;
+        const usUnit = item.dataset.originalUnitUs || '';
+        const metricUnit = item.dataset.originalUnitMetric || usUnit;
+        
+        const amountSpan = item.querySelector('.ingredient-amount');
+        
+        if (currentUnit === 'us') {
+          amountSpan.innerHTML = formatAmount(usAmount) + (usUnit ? ' <span class="ingredient-unit">' + usUnit + '</span>' : '');
+        } else {
+          amountSpan.innerHTML = formatAmount(metricAmount) + (metricUnit ? ' <span class="ingredient-unit">' + metricUnit + '</span>' : '');
+        }
+      });
+    }
+
+    function formatAmount(amount) {
+      // Remove trailing zeros and unnecessary decimals
+      if (amount % 1 === 0) {
+        return amount.toString();
+      } else {
+        // Format to 2 decimals but remove trailing zeros
+        const formatted = amount.toFixed(2);
+        return formatted.replace(/\.?0+$/, '');
+      }
+    }
+
+    // Handle favorite button click
+    document.querySelector('.favorite-btn-detail')?.addEventListener('click', async function() {
+      const recipeId = parseInt(this.dataset.recipeId);
+      const isFavorited = this.classList.contains('favorited');
+      const url = isFavorited 
+        ? `/favorite/remove/${recipeId}` 
+        : `/favorite/add/${recipeId}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          if (isFavorited) {
+            this.classList.remove('favorited');
+            this.innerHTML = '🤍 Add to Favorites';
+          } else {
+            this.classList.add('favorited');
+            this.innerHTML = '❤️ Favorited';
+          }
+        } else {
+          alert(data.message || 'Something went wrong');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+  </script>
+{% endblock %}

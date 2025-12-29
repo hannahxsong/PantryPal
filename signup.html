@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up · Pantry Pal{% endblock %}
+
+{% block content %}
+  <div class="card auth-card">
+    <h2>Create an account</h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.email.label }}<br />
+        {{ form.email(class="input") }}
+        {% if form.email.errors %}
+          <div class="form-error">
+            {{ form.email.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label }}<br />
+        {{ form.password(class="input") }}
+        {% if form.password.errors %}
+          <div class="form-error">
+            {{ form.password.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.confirm_password.label }}<br />
+        {{ form.confirm_password(class="input") }}
+        {% if form.confirm_password.errors %}
+          <div class="form-error">
+            {{ form.confirm_password.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      {{ form.submit(class="btn-primary full-width") }}
+
+      <!-- link to login if user already has account -->
+      <p class="auth-switch">
+        Already have an account?
+        <a href="{{ url_for('login') }}">Log in</a>.
+      </p>
+    </form>
+  </div>
+{% endblock %}
+
+
+

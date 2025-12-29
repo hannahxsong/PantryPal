@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Log In · Pantry Pal{% endblock %}
+
+{% block content %}
+  <div class="card auth-card">
+    <h2>Welcome back</h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.email.label }}<br />
+        {{ form.email(class="input") }}
+        {% if form.email.errors %}
+          <div class="form-error">
+            {{ form.email.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label }}<br />
+        {{ form.password(class="input") }}
+        {% if form.password.errors %}
+          <div class="form-error">
+            {{ form.password.errors[0] }}
+          </div>
+        {% endif %}
+      </div>
+
+      {{ form.submit(class="btn-primary full-width") }}
+
+      <!-- link to signup page if user doesn't have account -->
+      <p class="auth-switch">
+        Need an account?
+        <a href="{{ url_for('signup') }}">Sign up</a>.
+      </p>
+    </form>
+  </div>
+{% endblock %}
+
+
+

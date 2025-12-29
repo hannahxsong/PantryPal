@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Profile · Pantry Pal{% endblock %}
+
+{% block content %}
+  <div class="card auth-card">
+    <h2>Account Profile</h2>
+    
+    <!-- user account information -->
+    <div class="profile-info">
+      <div class="profile-field">
+        <label>Email</label>
+        <div class="profile-value">{{ current_user.email }}</div>
+      </div>
+      
+      <div class="profile-field">
+        <label>Total Favorites</label>
+        <div class="profile-value">{{ favorite_count }}</div>
+      </div>
+    </div>
+    
+    <!-- quick action buttons -->
+    <div class="profile-actions">
+      <a href="{{ url_for('ingredients') }}" class="btn-primary">Find Recipes</a>
+      <a href="{{ url_for('favorites') }}" class="btn-secondary">View Favorites</a>
+    </div>
+  </div>
+{% endblock %}
+

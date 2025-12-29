@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Pantry Pal{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <!-- navigation bar - shows different links based on login status -->
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="{{ url_for('index') }}" class="brand">Pantry Pal</a>
+      </div>
+      <div class="nav-right">
+        {% if current_user.is_authenticated %}
+          <!-- logged in users see these links -->
+          <a href="{{ url_for('ingredients') }}">Find Recipes</a>
+          <a href="{{ url_for('favorites') }}">Favorites</a>
+          <a href="{{ url_for('profile') }}">Profile</a>
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <!-- logged out users see login/signup -->
+          <a href="{{ url_for('login') }}">Log In</a>
+          <a href="{{ url_for('signup') }}" class="btn-primary">Sign Up</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <main class="container">
+      <!-- flash messages for success/error notifications -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- page content goes here (each page extends this template) -->
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
+
+
+

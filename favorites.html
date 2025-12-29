@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}My Favorites · Pantry Pal{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>My Favorite Recipes</h2>
+    {% if favorites %}
+      <!-- display favorites in a grid like the search results -->
+      <section class="results-grid">
+        {% for favorite in favorites %}
+          <article class="recipe-card">
+            <img src="{{ favorite.recipe_image }}" alt="{{ favorite.recipe_title }}" class="recipe-image" />
+            <div class="recipe-body">
+              <h3>{{ favorite.recipe_title }}</h3>
+              <div class="recipe-actions">
+                <a
+                  href="{{ url_for('recipe_detail', recipe_id=favorite.recipe_id) }}"
+                  class="btn-secondary small-btn"
+                >
+                  View full recipe
+                </a>
+                <!-- clicking this removes from favorites via ajax -->
+                <button 
+                  class="favorite-btn favorited" 
+                  data-recipe-id="{{ favorite.recipe_id }}"
+                >
+                  ❤️ Favorited
+                </button>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+    {% else %}
+      <!-- empty state when user has no favorites -->
+      <div style="text-align: center; padding: 2rem 0;">
+        <p style="color: var(--color-neutral-600); margin-bottom: 1.5rem;">You haven't added any favorites yet. Search for recipes and add them to your favorites!</p>
+        <a href="{{ url_for('ingredients') }}" class="btn-primary">Find Recipes</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // handle removing favorites - uses ajax so page doesn't reload
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const recipeId = parseInt(this.dataset.recipeId);
+        const url = `/favorite/remove/${recipeId}`;
+        
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // remove the card from the page immediately
+            this.closest('.recipe-card').remove();
+            
+            // if no favorites left, reload to show empty state message
+            if (document.querySelectorAll('.recipe-card').length === 0) {
+              location.reload();
+            }
+          } else {
+            alert(data.message || 'Something went wrong');
+          }
+        } catch (error) {
+          alert('Error: ' + error.message);
+        }
+      });
+    });
+  </script>
+{% endblock %}
+
