@@ -31,7 +31,7 @@ The relationship is one-to-many (one user can have many favorites). I used a for
 
 I implemented user authentication using Flask-Login, which handles sessions automatically. The `User` model needs to implement certain methods (`is_authenticated`, `is_active`, `is_anonymous`, `get_id`) that Flask-Login uses to track who's logged in.
 
-For passwords, I hash them using Werkzeug's `generate_password_hash` before storing in the database, and verify them with `check_password_hash` on login. This is important for security - I learned from CS50 that you should never store passwords in plain text.
+For passwords, I hash them using Werkzeug's `generate_password_hash` before storing in the database, and verify them with `check_password_hash` on login, as you should never store passwords in plain text.
 
 ## API Integration
 
