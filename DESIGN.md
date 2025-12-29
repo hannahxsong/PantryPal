@@ -8,7 +8,7 @@ I built this as my CS50 final project, applying concepts I learned throughout th
 
 ## Architecture
 
-The app follows a pretty standard Flask structure that I learned from CS50:
+The app follows a pretty standard Flask structure:
 
 - **Models**: SQLAlchemy classes (`User` and `Favorite`) that define the database tables
 - **Views**: Jinja2 templates in the `templates/` folder that render HTML
@@ -18,7 +18,7 @@ I kept it simple and organized - all the main logic is in `app.py`, templates ar
 
 ## Database Design
 
-I used SQLAlchemy (learned from CS50 Week 9) to create two tables:
+I used SQLAlchemy to create two tables:
 
 **users table**:
 - `id`: Primary key (auto-incrementing integer)
