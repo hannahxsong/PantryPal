@@ -1,11 +1,5 @@
 # Design Document: Pantry Pal
 
-## Overview
-
-Pantry Pal is a Flask web application that helps users find recipes based on ingredients they have. The app connects to the Spoonacular API to get recipe data and provides a clean interface for searching, viewing, and saving recipes.
-
-I built this as my CS50 final project, applying concepts I learned throughout the course - Flask for web development, SQLAlchemy for databases, and integrating with external APIs. I also learned some new things along the way, like handling OR searches and managing session state.
-
 ## Architecture
 
 The app follows a pretty standard Flask structure:
