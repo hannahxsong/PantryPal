@@ -171,27 +171,29 @@ To keep things fast:
 
 5. **Session Management**: I needed to store recipe data between requests so users could navigate away and return without losing their search results. Flask sessions worked perfectly for this.
 
-## What I Learned
+## Product Roadmap
 
-This project taught me a lot:
-- How to integrate with external APIs (Spoonacular)
-- How to handle different search types (AND vs OR)
-- How to manage session state for maintaining search results
-- How to make dynamic, interactive web pages with JavaScript
-- How to design a clean, modern UI
-- How to handle errors gracefully
+**Future Features**
 
-I used concepts from CS50 lectures (Flask, SQL, web development) and learned new things from documentation and Stack Overflow when I got stuck.
+- **Meal Planning**: Allow users to schedule recipes to a weekly calendar and generate automated shopping lists.
 
-## Future Improvements
+- **Social Integration**: Enable user-to-user recipe sharing and community ratings/reviews.
 
-If I had more time, I'd add:
-- Recipe ratings and reviews
-- Meal planning (save recipes to specific days)
-- Shopping list generation from recipes
-- Better caching to reduce API calls
-- User recipe uploads
-- Recipe sharing between users
+- **User Contributions**: Build an interface for users to upload and store their own custom family recipes alongside Spoonacular results.
+
+**Technical Scaling**
+
+- **Advanced Caching**: Implement a Redis-based cache for frequently accessed recipe data to minimize API latency.
+
+- **Optimized Database Queries**: Introduce database indexing on the most frequent search parameters to improve response times as the user base grows.
+
+## Technical Takeaways
+
+- **API Architecture**: Mastered the integration of complex external REST APIs and handled asynchronous data fetching.
+
+- **State Management**: Developed robust server-side state management using Flask sessions to maintain search persistence.
+
+- **Full-Stack Security**: Implemented industry-standard password hashing and protected against common vulnerabilities like SQL injection.
 
 ## References
 
@@ -199,5 +201,3 @@ If I had more time, I'd add:
 - SQLAlchemy Documentation: https://docs.sqlalchemy.org/
 - Flask-Login Documentation: https://flask-login.readthedocs.io/
 - Spoonacular API Documentation: https://spoonacular.com/food-api/docs
-- CS50 Lectures (Weeks 7-9 on Flask, SQL, and web development)
-- Stack Overflow discussions on OR search implementations with Spoonacular API
