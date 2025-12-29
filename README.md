@@ -23,12 +23,9 @@ Pantry Pal is a full-stack web application designed to eliminate food waste by g
 Required: **Python 3.10 or higher** and **A Spoonacular API key** - You can get a free one at https://spoonacular.com/food-api (the free tier gives you 150 requests per day, which is plenty for testing)
 
 1. **Clone the Repo**: git clone https://github.com/hannahxsong/PantryPal.git
-
-2. **Environment**: Create a virtual environment and install dependencies via `pip install -r requirements.txt.nstall -r requirements.txt`.
-
-3.. **API Configuration**: Create a .env file and add your `SPOONACULAR_API_KEY` and a `SECRET_KEY` in `app.py`. For the SECRET_KEY, just make up a long random string (it's used for session security). For the SPOONACULAR_API_KEY, paste the key you got from Spoonacular's website.
-
-4.. **Run**: Launch the server using `flask run` or `python app.py`.
+2.  **Environment**: Create a virtual environment and install dependencies via `pip install -r requirements.txt.nstall -r requirements.txt`.
+3.   *API Configuration**: Create a .env file and add your `SPOONACULAR_API_KEY` and a `SECRET_KEY` in `app.py`. For the SECRET_KEY, just make up a long random string (it's used for session security). For the SPOONACULAR_API_KEY, paste the key you got from Spoonacular's website.
+4. **Run**: Launch the server using `flask run` or `python app.py`.
 
 ## Usage & Workflow
 
