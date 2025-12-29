@@ -1,5 +1,14 @@
 # Design Document: Pantry Pal
 
+## Tech Stack
+
+| Layer	| Technology |
+| :--- | :--- |
+| **Backend** | Python, Flask |
+| **Database** | SQLAlchemy (ORM), SQLite |
+| **Frontend** | Jinja2, JavaScript, CSS |
+| **API** | Spoonacular Food API |
+
 ## Architecture
 
 The app follows a pretty standard Flask structure:
@@ -12,20 +21,20 @@ I kept it simple and organized - all the main logic is in `app.py`, templates ar
 
 ## Database Design
 
-I used SQLAlchemy to create two tables:
+I utilized SQLAlchemy as an ORM to manage the application's data. This choice was strategic, as it prevents SQL injection through parameterized queries and allows for a more scalable, Pythonic approach to data modeling.
+
+The relationship is one-to-many: one user can have many favorite recipes. I used a foreign key constraint to ensure data stays consistent.
 
 **users table**:
 - `id`: Primary key (auto-incrementing integer)
 - `email`: Unique email address, used for login
-- `password_hash`: Hashed password (using Werkzeug's password hashing - never store plain text passwords!)
+- `password_hash`: Hashed password (using Werkzeug's password hashing/security features)
 
 **favorites table**:
 - `id`: Primary key
 - `user_id`: Foreign key linking to users table
-- `recipe_id`: The Spoonacular recipe ID (I don't store the full recipe in my database, just the ID)
-- `recipe_title` and `recipe_image`: I cache these so I can display favorites quickly without calling the API every time
-
-The relationship is one-to-many (one user can have many favorites). I used a foreign key constraint to make sure data stays consistent.
+- `recipe_id`: The Spoonacular recipe ID
+- `recipe_title` and `recipe_image`: Cached fields to display favorites quickly without repeated API calls.
 
 ## Authentication
 
@@ -51,7 +60,7 @@ The search feature was probably the most complex part to implement. Here's how i
 
 **AND Search** (default): This one was straightforward - I use the `complexSearch` endpoint with the `includeIngredients` parameter. This ensures all specified ingredients are in the recipe.
 
-**OR Search**: This was trickier. The Spoonacular API's `complexSearch` doesn't really support true OR searches well. I found a solution on Stack Overflow that suggested searching each ingredient individually and combining the results. So my OR search:
+**OR Search**: This was trickier. The Spoonacular API's `complexSearch` doesn't really support true OR searches well. I came up with a solution that suggested searching each ingredient individually and combining the results:
 1. Loops through each ingredient
 2. Searches for recipes containing that ingredient using `findByIngredients`
 3. Combines all results in a dictionary (using recipe ID as key to avoid duplicates)
@@ -110,7 +119,7 @@ If the similar recipes endpoint fails, I have a fallback that searches by the fi
 
 I designed the UI to be clean and modern. I was inspired by Apple, Notion, and Airbnb's design - lots of whitespace, soft shadows, rounded corners, and a neutral color palette with purple as the accent color.
 
-The CSS uses CSS variables for consistent theming, which makes it easy to change colors throughout the site. Everything is responsive for mobile devices using media queries.
+The CSS uses CSS variables for consistent theming, which makes it easy to change colors throughout the site, and everything is responsive for mobile devices using media queries.
 
 ## Form Handling
 
@@ -120,7 +129,7 @@ I used WTForms for form validation, which I learned about from Flask documentati
 - Password confirmation matching
 - Required fields
 
-Form errors are displayed inline below each field, which gives users immediate feedback.
+Form errors are displayed inline below each field, providing users with immediate feedback.
 
 ## AJAX Endpoints
 
@@ -152,11 +161,11 @@ To keep things fast:
 
 ## Challenges I Faced
 
-1. **OR Search Problem**: The Spoonacular API's `complexSearch` doesn't handle OR searches well. I found a solution on Stack Overflow that searches each ingredient separately and combines results.
+1. **OR Search Problem**: The Spoonacular API does not natively support complex "OR" logic. I engineered a custom solution that iterates through individual ingredients and merges the results. While this increases API calls, I prioritized user flexibility and relevance-based sorting, as this provides a far superior UX than a strict "AND" search.
 
 2. **Ingredient Amount Formatting**: Removing unnecessary decimals was trickier than I thought. I ended up creating a JavaScript function that formats numbers and removes trailing zeros.
 
-3. **Measurement Conversion**: Not all recipes have metric data. I store both US and metric in data attributes and use US as fallback if metric is missing.
+3. **Measurement Conversion**: Not all recipes have metric data. I store both US and metric in data attributes and use US as a fallback if metric is missing.
 
 4. **Similar Recipes Images**: Some recipes don't have images in the similar endpoint response. I fetch full recipe info for each similar recipe to get images, with a fallback to a default image URL.
 
